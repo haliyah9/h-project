@@ -65,16 +65,37 @@ export default function Home() {
   const handleSignIn = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: signInForm.email,
-      password: signInForm.password,
-    });
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email: signInForm.email,
+        password: signInForm.password,
+      });
 
-    if (error) {
-      console.log(error);
+    if (authError) {
+      console.log(authError);
+      return;
     }
 
-    router.push("/home");
+    if (authData?.user) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authData.user.id)
+        .single();
+
+      if (profileError) {
+        console.log(profileError);
+        return;
+      }
+
+      if (profile.role === "staff") {
+        router.push("/staff/home");
+      } else if (profile.role === "admin") {
+        router.push("/admin/home");
+      } else {
+        router.refresh();
+      }
+    }
   };
   return (
     <div>
