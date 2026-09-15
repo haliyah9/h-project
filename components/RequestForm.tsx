@@ -87,7 +87,7 @@ const RequestForm = ({
             Select a format for the document to be prepared
           </option>
           <option value="pdf">PDF Document (.pdf)</option>
-          <option value="wprd">Word Document (.docx)</option>
+          <option value="word">Word Document (.docx)</option>
         </select>
       </div>
 
