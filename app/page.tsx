@@ -4,6 +4,14 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+export const DEPARTMENTS = [
+  "Admin / HR",
+  "Works",
+  "Environment",
+  "Tourism",
+  "Finance",
+];
+
 export default function Home() {
   const supabase = createClient();
   const router = useRouter();
@@ -133,11 +141,11 @@ export default function Home() {
                 <option value="" disabled>
                   Select a department
                 </option>
-                <option value="Admin / HR">Admin / HR</option>
-                <option value="Finance">Finance</option>
-                <option value="Environment">Environment</option>
-                <option value="Works">Works</option>
-                <option value="Tourism">Tourism</option>
+                {DEPARTMENTS.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
