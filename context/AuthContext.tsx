@@ -10,7 +10,9 @@ type RoleType = "staff" | "admin" | null;
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
+  username: string;
   role: RoleType;
+  department: string;
   handleSignout: () => void;
 }
 
@@ -19,7 +21,9 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [username, setUsername] = useState<string>("");
   const [role, setRole] = useState<RoleType>(null);
+  const [department, setDepartment] = useState<string>("");
 
   const supabase = createClient();
   const router = useRouter();
@@ -55,17 +59,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("role")
+        .select("username, role, department")
         .eq("id", user.id)
         .single();
 
       if (error) {
-        console.log("Failed to get user role:", error);
+        console.log("Failed to get user role and department:", error);
         setRole(null);
+        setDepartment("");
         return;
       }
 
+      setUsername(data.username);
       setRole(data.role as RoleType);
+      setDepartment(data.department);
     };
     getRole();
   }, [user]);
@@ -83,7 +90,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         user,
         loading,
+        username,
         role,
+        department,
         handleSignout,
       }}
     >
