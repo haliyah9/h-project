@@ -1,4 +1,3 @@
-import DownloadButton from "@/components/DownloadButton";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -20,7 +19,7 @@ const RequestPage = async () => {
   const { data: attachments, error } = await supabase
     .from("attachments")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   if (error) {
     return <div className="p-8 text-red-500">Failed to load attachments.</div>;
