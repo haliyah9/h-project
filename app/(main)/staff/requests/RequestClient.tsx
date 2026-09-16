@@ -2,7 +2,6 @@
 
 import DownloadButton from "@/components/DownloadButton";
 import RequestForm, { RequestFormData } from "@/components/RequestForm";
-import { createClient } from "@/utils/supabase/client";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -18,7 +17,6 @@ type Request = {
 };
 
 const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
-  const supabase = createClient();
   const [requests, setRequests] = useState<Request[]>(initialRequests);
   const [selected, setSelected] = useState<Request | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -35,20 +33,30 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
     }
 
     setLoading(true);
-    const { error } = await supabase
-      .from("attachments")
-      .update({ status: "Cancelled" })
-      .eq("id", selected.id);
 
-    if (!error) {
+    try {
+      const response = await fetch("/api/staff/request/cancel", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selected.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+
       const updatedReq = { ...selected, status: "Cancelled" };
       setRequests(requests.map((r) => (r.id === selected.id ? updatedReq : r)));
       setSelected(updatedReq);
-    } else {
+    } catch (error: any) {
       console.log(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleSaveEdit = async (data: RequestFormData): Promise<void> => {
@@ -57,24 +65,36 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
     }
     setLoading(true);
 
-    const { error } = await supabase
-      .from("attachments")
-      .update({ title: data.title, requested_format: data.format })
-      .eq("id", selected.id);
+    try {
+      const response = await fetch("/api/staff/request/edit", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selected.id,
+          title: data.title,
+          format: data.format,
+        }),
+      });
 
-    if (!error) {
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+
       const updatedReq = {
         ...selected,
         title: data.title,
-        requested_format: data.format,
+        format: data.format,
       };
       setRequests(requests.map((r) => (r.id === selected.id ? updatedReq : r)));
       setSelected(updatedReq);
       setIsEditing(false);
-    } else {
+    } catch (error: any) {
       console.log(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (requests.length === 0) {
