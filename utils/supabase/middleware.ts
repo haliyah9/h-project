@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-export const createClient = (request: NextRequest) => {
+export const createClient = async (request: NextRequest) => {
   // Create an unmodified response
   let supabaseResponse = NextResponse.next({
     request: {
@@ -30,6 +30,55 @@ export const createClient = (request: NextRequest) => {
       },
     },
   });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  const isProtectedRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/staff") ||
+    pathname.startsWith("/api/staff") ||
+    pathname.startsWith("/api/admin");
+
+  if (isProtectedRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname === "/invite") {
+    return supabaseResponse;
+  }
+
+  if (pathname.startsWith("/admin") && user) {
+    const { data: isAdmin, error } = await supabase.rpc("is_admin");
+
+    if (error || !isAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/staff/home";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  if (pathname.startsWith("/staff") && user) {
+    const { data: isAdmin, error } = await supabase.rpc("is_admin");
+
+    if (!error && isAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/home";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  if (pathname === "/" && user) {
+    const { data: isAdmin } = await supabase.rpc("is_admin");
+    const url = request.nextUrl.clone();
+    url.pathname = isAdmin ? "/admin/home" : "/staff/home";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 };
