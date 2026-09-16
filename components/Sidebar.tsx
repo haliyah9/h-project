@@ -1,7 +1,13 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { CircleUser, ClipboardList, FilePlus, Home } from "lucide-react";
+import {
+  CircleUser,
+  ClipboardList,
+  FilePlus,
+  Home,
+  ToolCase,
+} from "lucide-react";
 import Link from "next/link";
 
 const staffNav = [
@@ -15,7 +21,10 @@ const staffNav = [
   { title: "My Profile", path: "/staff/profile", icon: <CircleUser /> },
 ];
 
-const adminNav = [{ title: "Home", path: "/admin/home", icon: <Home /> }];
+const adminNav = [
+  { title: "Home", path: "/admin/home", icon: <Home /> },
+  { title: "Fix Requests", path: "/admin/fix-requests", icon: <ToolCase /> },
+];
 
 const Sidebar = () => {
   const { role } = useAuth();
