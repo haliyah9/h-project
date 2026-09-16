@@ -33,6 +33,7 @@ const SubmitRequestsPage = () => {
       if (!user) {
         throw new Error("You must be logged in to submit a request");
       }
+
       const cleanFileName = data.file.name.replace(/\s+/g, "_");
       const filePath = `${user.id}/${Date.now()}_${cleanFileName}`;
 
@@ -44,16 +45,21 @@ const SubmitRequestsPage = () => {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      const { error: dbError } = await supabase.from("attachments").insert({
-        user_id: user.id,
-        title: data.title,
-        original_file_url: filePath,
-        requested_format: data.format,
+      const response = await fetch("/api/staff/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: data.title,
+          format: data.format,
+          fileUrl: filePath,
+        }),
       });
 
-      if (dbError) {
+      const result = await response.json();
+
+      if (!response.ok) {
         await supabase.storage.from("attachments").remove([filePath]);
-        throw new Error(`Database error: ${dbError.message}`);
+        throw new Error(result.error);
       }
 
       setMessage({ type: "success", text: "Request submitted successfully!" });
