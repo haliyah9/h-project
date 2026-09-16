@@ -16,6 +16,7 @@ const FixRequestsPage = async () => {
   const { data: attachments, error } = await supabase
     .from("attachments")
     .select("*")
+    .eq("status", "Pending")
     .order("created_at", { ascending: true });
   if (error) {
     return <div className="p-8 text-red-500">Failed to load attachments.</div>;
