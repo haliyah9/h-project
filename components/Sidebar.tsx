@@ -24,6 +24,7 @@ const staffNav = [
 const adminNav = [
   { title: "Home", path: "/admin/home", icon: <Home /> },
   { title: "Fix Requests", path: "/admin/fix-requests", icon: <ToolCase /> },
+  { title: "All Requests", path: "/admin/requests", icon: <ClipboardList /> },
 ];
 
 const Sidebar = () => {
