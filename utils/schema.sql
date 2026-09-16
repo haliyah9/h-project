@@ -168,3 +168,17 @@ CREATE POLICY "Admins can update and delete files"
     bucket_id = 'attachments' AND
     (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
   );
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+DECLARE
+    admin_status BOOLEAN;
+BEGIN 
+    SELECT EXISTS (
+        SELECT 1 FROM public.profiles as u 
+        WHERE u.id = auth.uid() AND u.role = 'admin'
+    ) INTO admin_status ;
+
+    RETURN admin_status;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
