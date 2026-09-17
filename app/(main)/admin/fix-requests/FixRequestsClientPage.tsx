@@ -5,6 +5,13 @@ import { useState } from "react";
 import Tiptap from "@/components/Tiptap";
 import { createClient } from "@/utils/supabase/client";
 import { X } from "lucide-react";
+import html2pdf from "html2pdf.js";
+import { asBlob } from "html-docx-js-typescript";
+import {
+  formatForPdf,
+  formatForWord,
+  getPdfOptions,
+} from "@/utils/DocumentFormatters";
 
 type Request = {
   id: string;
@@ -25,6 +32,7 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const fetchImage = async (filepath: string) => {
     setImageLoading(true);
@@ -51,6 +59,71 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
   const handleCloseModal = () => {
     setSelected(null);
     setImageUrl(null);
+  };
+
+  const handleSaveDocument = async () => {
+    if (!selected) {
+      return;
+    }
+    setIsSaving(true);
+
+    try {
+      let generatedFile: File;
+      const cleanReference = selected.reference.replace(/\s+/g, "_");
+
+      if (selected.requested_format === "pdf") {
+        const styledHtml = formatForPdf(documentHtml);
+        const pdfOptions = getPdfOptions(`${cleanReference}_final.pdf`);
+
+        const pdfBlob = await html2pdf()
+          .set(pdfOptions)
+          .from(styledHtml)
+          .outputPdf("blob");
+        generatedFile = new File([pdfBlob], `${cleanReference}_final.pdf`, {
+          type: "application/pdf",
+        });
+      } else if (selected.requested_format === "word") {
+        const wordHtml = formatForWord(documentHtml);
+
+        const docxBlob = await asBlob(wordHtml);
+        generatedFile = new File(
+          [docxBlob as Blob],
+          `${cleanReference}_final.docx`,
+          {
+            type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          },
+        );
+      } else {
+        throw new Error("Unknown Format Requested");
+      }
+
+      const filePath = `resolved/${Date.now()}_${generatedFile.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("attachments")
+        .upload(filePath, generatedFile);
+      if (uploadError) {
+        throw new Error(`Upload Failed: ${uploadError.message}`);
+      }
+
+      const response = await fetch("/api/admin/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selected.id,
+          documentUrl: filePath,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+
+      handleCloseModal();
+    } catch (error: any) {
+      console.log("Failed to generate document");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (requests.length === 0) {
@@ -163,9 +236,13 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
                 <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
                   <button
                     type="button"
+                    onClick={handleSaveDocument}
+                    disabled={isSaving}
                     className="rounded-xl bg-emerald-600 px-8 py-3 font-semibold text-white transition hover:bg-emerald-700 shadow-sm"
                   >
-                    Save and Generate <span>{selected.requested_format}</span>
+                    {isSaving
+                      ? "Generating Document..."
+                      : `Save and Generate ${selected.requested_format}`}
                   </button>
                 </div>
               </div>
