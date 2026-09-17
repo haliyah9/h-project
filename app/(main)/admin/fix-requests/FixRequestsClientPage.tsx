@@ -1,8 +1,10 @@
 "use client";
 
 import DownloadButton from "@/components/DownloadButton";
-import { X } from "lucide-react";
 import { useState } from "react";
+import Tiptap from "@/components/Tiptap";
+import { createClient } from "@/utils/supabase/client";
+import { X } from "lucide-react";
 
 type Request = {
   id: string;
@@ -16,6 +18,41 @@ type Request = {
 };
 
 const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
+  const supabase = createClient();
+  const [selected, setSelected] = useState<Request | null>(null);
+  const [documentHtml, setDocumentHtml] = useState<string>(
+    "<p>Start typing the official document here...</p>",
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState<boolean>(false);
+
+  const fetchImage = async (filepath: string) => {
+    setImageLoading(true);
+    const { data, error } = await supabase.storage
+      .from("attachments")
+      .createSignedUrl(filepath, 3600);
+
+    if (error) {
+      console.error("Error loading image:", error);
+      setImageLoading(false);
+      return;
+    }
+
+    setImageUrl(data.signedUrl);
+    setImageLoading(false);
+  };
+
+  const openModal = async (req: Request): Promise<void> => {
+    setSelected(req);
+    setImageUrl(null);
+    fetchImage(req.original_file_url);
+  };
+
+  const handleCloseModal = () => {
+    setSelected(null);
+    setImageUrl(null);
+  };
+
   if (requests.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
@@ -43,7 +80,7 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
                 Status
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Requested Attachment
+                Action
               </th>
             </tr>
           </thead>
@@ -56,15 +93,18 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
                 <td className="px-6 py-4 font-mono text-sm font-medium text-emerald-700">
                   {req.reference}
                 </td>
+
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
                   {req.title}
                   <div className="mt-1 text-xs text-gray-400">
                     {new Date(req.created_at).toLocaleDateString()}
                   </div>
                 </td>
+
                 <td className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">
                   {req.requested_format}
                 </td>
+
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -78,21 +118,78 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
                     {req.status}
                   </span>
                 </td>
-                <td>
-                  <div className="space-y-3 rounded-xl border border-gray-100 p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">
-                        Original Upload:
-                      </span>
-                      <DownloadButton filePath={req.original_file_url} />
-                    </div>
-                  </div>
+
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() => openModal(req)}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                  >
+                    Start Typing
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-50 flex p-4 sm:p-6 items-center justify-center bg-gray-900/60 backdrop-blur-sm">
+          <div className="flex h-full w-full max-w-[1600px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm z-10">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Draft Document
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Reference:{" "}
+                  <span className="font-mono">{selected.reference}</span>
+                </p>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden bg-gray-50">
+              <div className="flex flex-col overflow-y-auto border-r border-gray-200 bg-white p-6">
+                <div className="flex-1">
+                  <Tiptap content={documentHtml} onChange={setDocumentHtml} />
+                </div>
+
+                <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
+                  <button
+                    type="button"
+                    className="rounded-xl bg-emerald-600 px-8 py-3 font-semibold text-white transition hover:bg-emerald-700 shadow-sm"
+                  >
+                    Save and Generate <span>{selected.requested_format}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center overflow-auto p-6">
+                {imageLoading ? (
+                  <div className="flex flex-col items-center text-gray-400 animate-pulse">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-emerald-600 mb-4"></div>
+                    <p>Loading attachment preview...</p>
+                  </div>
+                ) : imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Original Upload"
+                    className="max-h-full max-w-full rounded-lg object-contain shadow-md border border-gray-200 bg-white"
+                  />
+                ) : (
+                  <p className="text-gray-400">Failed to load preview.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
