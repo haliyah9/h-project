@@ -19,6 +19,7 @@ const RequestPage = async () => {
   const { data: attachments, error } = await supabase
     .from("attachments")
     .select("*")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: true });
 
   if (error) {
