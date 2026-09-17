@@ -1,7 +1,7 @@
 "use client";
 
 import DownloadButton from "@/components/DownloadButton";
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 type Request = {
@@ -17,9 +17,40 @@ type Request = {
 
 const AllRequestsClientPage = ({ requests }: { requests: Request[] }) => {
   const [selected, setSelected] = useState<Request | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const openModal = (req: Request): void => {
     setSelected(req);
   };
+
+  const handleDeleteDocument = async () => {
+    if (!selected || !selected.document_url) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch("/api/admin/revert", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: selected.id,
+          documentUrl: selected.document_url,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+
+      setSelected(null);
+    } catch (error: any) {
+      console.log(error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (requests.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
@@ -27,6 +58,7 @@ const AllRequestsClientPage = ({ requests }: { requests: Request[] }) => {
       </div>
     );
   }
+
   return (
     <div>
       <h1>All Requests</h1>
@@ -139,7 +171,18 @@ const AllRequestsClientPage = ({ requests }: { requests: Request[] }) => {
                     Final Document:
                   </span>
                   {selected.document_url ? (
-                    <DownloadButton filePath={selected.document_url} />
+                    <div className="flex items-center gap-2">
+                      <DownloadButton filePath={selected.document_url} />
+                      <button
+                        type="button"
+                        onClick={handleDeleteDocument}
+                        disabled={isDeleting}
+                        className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-lg transition disabled:opacity-50"
+                        title="Delete Document & Revert to Pending"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   ) : (
                     <span className="text-sm italic text-gray-400">
                       Pending Admin
