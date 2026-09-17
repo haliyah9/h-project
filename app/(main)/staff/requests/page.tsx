@@ -24,6 +24,7 @@ const RequestPage = async () => {
   if (error) {
     return <div className="p-8 text-red-500">Failed to load attachments.</div>;
   }
+
   return (
     <div className="mx-auto max-w-5xl p-8">
       <div className="mb-8 flex items-center justify-between">
