@@ -182,3 +182,12 @@ BEGIN
     RETURN admin_status;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE POLICY "Staff can download resolved documents"
+ON storage.objects
+FOR SELECT 
+TO authenticated
+USING (
+  bucket_id = 'attachments'
+  AND (storage.foldername(name))[1] = 'resolved'
+);
