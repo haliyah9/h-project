@@ -35,7 +35,7 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/staff/request/cancel", {
+      const response = await fetch("/api/staff/cancel", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -66,7 +66,7 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/staff/request/edit", {
+      const response = await fetch("/api/staff/edit", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
