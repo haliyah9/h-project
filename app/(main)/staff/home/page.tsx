@@ -13,12 +13,32 @@ const HomePage = async () => {
     redirect("/");
   }
 
-  const { data: attachment, error: attachmentError } = await supabase
-    .from("attachments")
-    .select("*");
-  if (attachmentError) {
-    console.log(attachmentError.message);
-  }
+  const [
+    { count: totalCount },
+    { count: pendingCount },
+    { count: resolvedCount },
+    { count: cancelledCount },
+  ] = await Promise.all([
+    supabase
+      .from("attachments")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("attachments")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "Pending"),
+    supabase
+      .from("attachments")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "Resolved"),
+    supabase
+      .from("attachments")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "Cancelled"),
+  ]);
 
   const { data: recentAttachment, error: recentAttachmentError } =
     await supabase
@@ -31,7 +51,10 @@ const HomePage = async () => {
   }
   return (
     <StaffHomeClientPage
-      request={attachment || []}
+      totalRequests={totalCount}
+      pendingRequests={pendingCount}
+      resolvedRequests={resolvedCount}
+      cancelledRequests={cancelledCount}
       recentRequest={recentAttachment || []}
     />
   );
