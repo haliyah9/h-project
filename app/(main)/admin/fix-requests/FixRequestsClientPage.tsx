@@ -1,7 +1,7 @@
 "use client";
 
 import DownloadButton from "@/components/DownloadButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tiptap from "@/components/Tiptap";
 import { createClient } from "@/utils/supabase/client";
 import { X } from "lucide-react";
@@ -12,6 +12,7 @@ import {
   formatForWord,
   getPdfOptions,
 } from "@/utils/DocumentFormatters";
+import { useRouter } from "next/navigation";
 
 type Request = {
   id: string;
@@ -26,6 +27,8 @@ type Request = {
 
 const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
   const supabase = createClient();
+  const router = useRouter();
+
   const [selected, setSelected] = useState<Request | null>(null);
   const [documentHtml, setDocumentHtml] = useState<string>(
     "<p>Start typing the official document here...</p>",
@@ -126,6 +129,23 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
     }
   };
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime_attachments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "attachments" },
+        () => {
+          router.refresh();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router]);
+
   if (requests.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
@@ -133,6 +153,7 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
       </div>
     );
   }
+
   return (
     <div>
       <h1>Pending Requests</h1>
