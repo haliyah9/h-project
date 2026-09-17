@@ -1,8 +1,10 @@
 "use client";
 
 import DownloadButton from "@/components/DownloadButton";
+import { createClient } from "@/utils/supabase/client";
 import { Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Request = {
   id: string;
@@ -16,6 +18,9 @@ type Request = {
 };
 
 const AllRequestsClientPage = ({ requests }: { requests: Request[] }) => {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [selected, setSelected] = useState<Request | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const openModal = (req: Request): void => {
@@ -50,6 +55,23 @@ const AllRequestsClientPage = ({ requests }: { requests: Request[] }) => {
       setIsDeleting(false);
     }
   };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime_attachments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "attachments" },
+        () => {
+          router.refresh();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router]);
 
   if (requests.length === 0) {
     return (
