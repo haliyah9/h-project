@@ -3,7 +3,8 @@
 import { DEPARTMENTS } from "@/app/page";
 import { createClient } from "@/utils/supabase/client";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type ProfileType = {
   id: string;
@@ -30,6 +31,7 @@ const ProfileClientPage = ({
   email?: string;
 }) => {
   const supabase = createClient();
+  const router = useRouter();
 
   const [formData, setFormData] = useState<FormData>({
     username: profile.username ?? "",
@@ -97,6 +99,23 @@ const ProfileClientPage = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime_profiles")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          router.refresh();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router]);
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
