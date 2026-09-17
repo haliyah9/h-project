@@ -2,17 +2,10 @@
 
 import { DEPARTMENTS } from "@/app/page";
 import { createClient } from "@/utils/supabase/client";
+import { Profile } from "@/utils/types";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-type ProfileType = {
-  id: string;
-  username: string;
-  department: string;
-  role: string;
-  created_at: string;
-};
 
 type FormData = {
   username: string;
@@ -27,7 +20,7 @@ const ProfileClientPage = ({
   profile,
   email,
 }: {
-  profile: ProfileType;
+  profile: Profile;
   email?: string;
 }) => {
   const supabase = createClient();
