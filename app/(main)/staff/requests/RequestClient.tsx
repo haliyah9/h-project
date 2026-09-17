@@ -2,8 +2,10 @@
 
 import DownloadButton from "@/components/DownloadButton";
 import RequestForm, { RequestFormData } from "@/components/RequestForm";
+import { createClient } from "@/utils/supabase/client";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Request = {
   id: string;
@@ -17,6 +19,9 @@ type Request = {
 };
 
 const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [requests, setRequests] = useState<Request[]>(initialRequests);
   const [selected, setSelected] = useState<Request | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -96,6 +101,23 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime_attachments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "attachments" },
+        () => {
+          router.refresh();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router]);
 
   if (requests.length === 0) {
     return (
