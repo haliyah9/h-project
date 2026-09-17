@@ -1,38 +1,23 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { Request } from "@/utils/types";
 import Link from "next/link";
 
-type Request = {
-  id: string;
-  reference: string;
-  title: string;
-  requested_format: string;
-  status: string;
-  original_file_url: string;
-  document_url: string | null;
-  created_at: string;
-};
-
 const StaffHomeClientPage = ({
-  request,
+  totalRequests,
+  pendingRequests,
+  resolvedRequests,
+  cancelledRequests,
   recentRequest,
 }: {
-  request: Request[];
+  totalRequests: number | null;
+  pendingRequests: number | null;
+  resolvedRequests: number | null;
+  cancelledRequests: number | null;
   recentRequest: Request[];
 }) => {
   const { username, department } = useAuth();
-
-  const totalAttachments = request?.length;
-  const pendingAttachments = request?.filter(
-    (att) => att.status === "Pending",
-  ).length;
-  const resolvedAttachments = request?.filter(
-    (att) => att.status === "Resolved",
-  ).length;
-  const cancelledAttachments = request?.filter(
-    (att) => att.status === "Cancelled",
-  ).length;
 
   const hour = new Date().getHours();
 
@@ -51,29 +36,33 @@ const StaffHomeClientPage = ({
 
       <div className="flex gap-4">
         <div>
-          <h1>{totalAttachments}</h1>
-          <h3>{totalAttachments === 0 ? "Total Request" : "Total Requests"}</h3>
+          <h1>{totalRequests}</h1>
+          <h3>
+            {totalRequests === 0 || totalRequests === null
+              ? "No Requests Submitted"
+              : "Total Requests"}
+          </h3>
         </div>
         <div>
-          <h1>{pendingAttachments}</h1>
+          <h1>{pendingRequests}</h1>
           <h3>
-            {pendingAttachments === 0
+            {pendingRequests === 0 || pendingRequests === null
               ? "No Pending Request"
               : "Pending Requests"}
           </h3>
         </div>
         <div>
-          <h1>{resolvedAttachments}</h1>
+          <h1>{resolvedRequests}</h1>
           <h3>
-            {resolvedAttachments === 0
+            {resolvedRequests === 0 || resolvedRequests === null
               ? "No Resolved Request"
               : "Resolved Requests"}
           </h3>
         </div>
         <div>
-          <h1>{cancelledAttachments}</h1>
+          <h1>{cancelledRequests}</h1>
           <h3>
-            {cancelledAttachments === 0
+            {cancelledRequests === 0 || cancelledRequests === null
               ? "No Cancelled Request"
               : "Cancelled Requests"}
           </h3>
