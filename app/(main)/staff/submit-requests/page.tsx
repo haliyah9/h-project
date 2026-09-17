@@ -45,7 +45,7 @@ const SubmitRequestsPage = () => {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      const response = await fetch("/api/staff/request", {
+      const response = await fetch("/api/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
