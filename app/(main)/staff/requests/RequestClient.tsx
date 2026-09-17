@@ -3,20 +3,10 @@
 import DownloadButton from "@/components/DownloadButton";
 import RequestForm, { RequestFormData } from "@/components/RequestForm";
 import { createClient } from "@/utils/supabase/client";
+import { Request } from "@/utils/types";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-type Request = {
-  id: string;
-  reference: string;
-  title: string;
-  requested_format: string;
-  status: string;
-  original_file_url: string;
-  document_url: string | null;
-  created_at: string;
-};
 
 const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
   const supabase = createClient();
