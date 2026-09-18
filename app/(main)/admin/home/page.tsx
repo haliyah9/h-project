@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import AdminHomeClient from "./AdminHomeClient";
+import { DEPARTMENTS } from "@/utils/types";
 
 const AdminHomePage = async () => {
   const supabase = await createClient();
@@ -40,6 +41,7 @@ const AdminHomePage = async () => {
     .eq("status", "Pending")
     .order("created_at", { ascending: true })
     .limit(5);
+
   return (
     <AdminHomeClient
       totalRequests={totalCount}
