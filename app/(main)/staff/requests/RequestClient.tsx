@@ -3,8 +3,9 @@
 import DownloadButton from "@/components/DownloadButton";
 import RequestForm, { RequestFormData } from "@/components/RequestForm";
 import { createClient } from "@/utils/supabase/client";
-import { Request } from "@/utils/types";
+import { Request } from "@/utils/helpers";
 import { X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -119,6 +120,18 @@ const RequestClient = ({ initialRequests }: { initialRequests: Request[] }) => {
 
   return (
     <>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-gray-900">
+            My Requests
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Track the status of your document requests
+          </p>
+        </div>
+
+        <Link href="/staff/submit-requests">+ New Request</Link>
+      </div>
       <div className="overflow-x-auto overflow-y-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-gray-100">
           <thead className="bg-gray-50/50">
