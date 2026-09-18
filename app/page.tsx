@@ -1,16 +1,9 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
+import { DEPARTMENTS } from "@/utils/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-export const DEPARTMENTS = [
-  "Admin / HR",
-  "Works",
-  "Environment",
-  "Tourism",
-  "Finance",
-];
 
 export default function Home() {
   const supabase = createClient();
