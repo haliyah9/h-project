@@ -105,35 +105,37 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1.5">
-          {NavItems?.map((item) => {
-            const isActive = pathname === item.path;
+        <div className="mt-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <nav className="flex flex-col gap-1.5">
+            {NavItems?.map((item) => {
+              const isActive = pathname === item.path;
 
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                onClick={onClose}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-50"
-                }`}
-              >
-                <span
-                  className={
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-slate-400 dark:text-slate-500"
-                  }
+                      ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-50"
+                  }`}
                 >
-                  {item.icon}
-                </span>
-                <span>{item.title}</span>
-              </Link>
-            );
-          })}
-        </nav>
+                  <span
+                    className={
+                      isActive
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-slate-400 dark:text-slate-500"
+                    }
+                  >
+                    {item.icon}
+                  </span>
+                  <span>{item.title}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
         <div className="mt-auto border-t border-slate-200 pt-4 dark:border-slate-800">
           <div className="flex items-center gap-3 rounded-lg px-2 py-2">
