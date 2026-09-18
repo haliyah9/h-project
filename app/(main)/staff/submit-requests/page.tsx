@@ -19,7 +19,7 @@ const SubmitRequestsPage = () => {
     text: string;
   } | null>(null);
 
-  const handleSubmit = async (data: RequestFormData): Promise<void> => {
+  const handleSubmit = async (data: RequestFormData) => {
     setMessage(null);
 
     if (!data.file) {
@@ -87,18 +87,18 @@ const SubmitRequestsPage = () => {
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         {message && (
           <div
-            className={`mb-6 rounded-lg px-4 py-3 text-sm ${
+            className={`mb-6 flex items-start gap-3 rounded-lg border p-4 text-sm ${
               message.type === "error"
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400"
+                : "border-green-200 bg-green-50 text-green-700 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-400"
             }`}
           >
             {message.type === "error" ? (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
             ) : (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
             )}
-            <span>{message.text}</span>
+            <p className="font-medium">{message.text}</p>
           </div>
         )}
 
