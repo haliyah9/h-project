@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import AdminHomeClient from "./AdminHomeClient";
-import { DEPARTMENTS } from "@/utils/types";
+import { DEPARTMENTS } from "@/utils/helpers";
 
 const AdminHomePage = async () => {
   const supabase = await createClient();
