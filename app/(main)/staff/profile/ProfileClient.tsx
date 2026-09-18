@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
-import { DEPARTMENTS, Profile } from "@/utils/types";
+import { DEPARTMENTS, Profile } from "@/utils/helpers";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
