@@ -16,3 +16,11 @@ export type Profile = {
   role: string;
   created_at: string;
 };
+
+export const DEPARTMENTS = [
+  "Admin / HR",
+  "Works",
+  "Environment",
+  "Tourism",
+  "Finance",
+];
