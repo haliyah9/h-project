@@ -148,7 +148,7 @@ const StaffHomeClientPage = ({
                     <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                       Ref: {req.reference}
                     </span>
-                    <span>•</span>
+                    <span>&bull;</span>
                     <span>Format: {req.requested_format}</span>
                   </div>
                 </div>
