@@ -74,36 +74,43 @@ const SubmitRequestsPage = () => {
     }
   };
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm mt-10">
-      <h2 className="mb-6 font-serif text-2xl font-semibold text-gray-900">
-        New Attachment Request
-      </h2>
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+          New Document Request
+        </h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          Upload a file and specify the format for digitization.
+        </p>
+      </div>
 
-      {message && (
-        <div
-          className={`mb-6 rounded-lg px-4 py-3 text-sm ${
-            message.type === "error"
-              ? "bg-red-50 text-red-700 border border-red-200"
-              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-          }`}
-        >
-          {message.type === "error" ? (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          ) : (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+        {message && (
+          <div
+            className={`mb-6 rounded-lg px-4 py-3 text-sm ${
+              message.type === "error"
+                ? "bg-red-50 text-red-700 border border-red-200"
+                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+            }`}
+          >
+            {message.type === "error" ? (
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            ) : (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            )}
+            <span>{message.text}</span>
+          </div>
+        )}
 
-      <RequestForm
-        initialFormat="pdf"
-        showFileUpload={true}
-        loading={loading}
-        submitLabel="Submit Request"
-        onSubmit={handleSubmit}
-        onCancel={() => router.push("/staff/home")}
-      />
+        <RequestForm
+          initialFormat="pdf"
+          showFileUpload={true}
+          loading={loading}
+          submitLabel="Submit Request"
+          onSubmit={handleSubmit}
+          onCancel={() => router.push("/staff/home")}
+        />
+      </div>
     </div>
   );
 };
