@@ -19,7 +19,10 @@ type RequestProps = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2";
+  "block w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-100";
+
+const labelClass =
+  "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 const RequestForm = ({
   initialTitle = "",
@@ -30,9 +33,11 @@ const RequestForm = ({
   onSubmit,
   onCancel,
 }: RequestProps) => {
-  const [title, setTitle] = useState<string>(initialTitle);
+  const [title, setTitle] = useState(initialTitle);
   const [format, setFormat] = useState<"pdf" | "word">(initialFormat);
   const [file, setFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -55,14 +60,10 @@ const RequestForm = ({
     }
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Title / Description
-        </label>
+        <label className={labelClass}>Title / Description</label>
         <input
           type="text"
           name="title"
@@ -74,69 +75,74 @@ const RequestForm = ({
         />
       </div>
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">
-          Requested Format
-        </label>
+        <label className={labelClass}>Requested Format</label>
         <select
           className={`${inputClass} cursor-pointer`}
           value={format}
           required
           onChange={(e) => setFormat(e.target.value as "pdf" | "word")}
         >
-          <option value="" disabled>
+          <option value="" disabled className="bg-white dark:bg-slate-900">
             Select a format for the document to be prepared
           </option>
-          <option value="pdf">PDF Document (.pdf)</option>
-          <option value="word">Word Document (.docx)</option>
+          <option value="pdf" className="bg-white dark:bg-slate-900">
+            PDF Document (.pdf)
+          </option>
+          <option value="word" className="bg-white dark:bg-slate-900">
+            Word Document (.docx)
+          </option>
         </select>
       </div>
 
       {showFileUpload && (
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Upload Source File
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx"
-            onChange={handleFileChange}
-            required
-            ref={fileInputRef}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100"
-          />
-          <button
-            type="button"
-            onClick={handleClearFile}
-            className="ml-3 text-sm font-medium text-red-500 hover:text-red-700 cursor-pointer"
-          >
-            Clear
-          </button>
-          <p className="mt-2 text-xs text-gray-500">
+          <label className={labelClass}>Upload Source File</label>
+          <div className="flex items-center gap-3">
+            <input
+              id="file-upload"
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleFileChange}
+              required
+              ref={fileInputRef}
+              className="block w-full text-sm text-slate-500 transition-colors file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:text-slate-400 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:bg-blue-900/50"
+            />
+            {file && (
+              <button
+                type="button"
+                onClick={handleClearFile}
+                className="shrink-0 cursor-pointer whitespace-nowrap text-sm font-medium text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Accepted: Images, PDF, Word, Excel.
           </p>
         </div>
       )}
-      <button
-        type="submit"
-        disabled={loading}
-        className={`mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 ${
-          loading ? "cursor-not-allowed opacity-70" : ""
-        }`}
-      >
-        {loading ? "Processing..." : submitLabel}
-      </button>
 
-      {onCancel && (
+      <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="w-full cursor-pointer rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            Cancel
+          </button>
+        )}
         <button
-          type="button"
-          onClick={onCancel}
+          type="submit"
           disabled={loading}
-          className="flex-1 rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+          className="w-full cursor-pointer rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto dark:focus:ring-offset-slate-900"
         >
-          Cancel
+          {loading ? "Processing..." : submitLabel}
         </button>
-      )}
+      </div>
     </form>
   );
 };
