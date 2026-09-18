@@ -26,23 +26,7 @@ const RequestPage = async () => {
     return <div className="p-8 text-red-500">Failed to load attachments.</div>;
   }
 
-  return (
-    <div className="mx-auto max-w-5xl p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="font-serif text-3xl font-bold text-gray-900">
-            My Requests
-          </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Track the status of your document requests
-          </p>
-        </div>
-
-        <Link href="/staff/submit-requests">+ New Request</Link>
-      </div>
-      <RequestClient initialRequests={attachments || []} />
-    </div>
-  );
+  return <RequestClient initialRequests={attachments || []} />;
 };
 
 export default RequestPage;
