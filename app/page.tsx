@@ -304,7 +304,7 @@ export default function Home() {
                     value={department}
                     required
                     onChange={handleDepartment}
-                    className={inputClass}
+                    className={`${inputClass} cursor-pointer`}
                   >
                     <option
                       value=""
