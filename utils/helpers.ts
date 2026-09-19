@@ -11,9 +11,11 @@ export type Request = {
 
 export type Profile = {
   id: string;
+  email: string | null;
   username: string;
   department: string;
   role: string;
+  account_status: string;
   created_at: string;
 };
 
