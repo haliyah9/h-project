@@ -131,6 +131,11 @@ const ProfileClientPage = ({
                 year: "numeric",
               })}
             </span>
+            <span>&bull;</span>
+            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              {profile.account_status.charAt(0).toUpperCase() +
+                profile.account_status.slice(1)}
+            </span>
           </div>
         </div>
 
