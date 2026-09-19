@@ -8,6 +8,7 @@ import {
   Files,
   Home,
   ToolCase,
+  UserCog2,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -43,6 +44,11 @@ const adminNav = [
     title: "All Requests",
     path: "/admin/requests",
     icon: <ClipboardList className="h-5 w-5" />,
+  },
+  {
+    title: "Users",
+    path: "/admin/users",
+    icon: <UserCog2 className="h-5 w-5" />,
   },
 ];
 
