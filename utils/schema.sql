@@ -31,12 +31,13 @@ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, username, department, role)
+  INSERT INTO public.profiles (id, username, department, role, email)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data ->> 'username',
     NEW.raw_user_meta_data ->> 'department',
-    'staff' 
+    COALESCE(NEW.raw_user_meta_data ->> 'role', 'staff')::user_role,
+    NEW.email
   );
   RETURN NEW;
 END;
@@ -191,3 +192,38 @@ USING (
   bucket_id = 'attachments'
   AND (storage.foldername(name))[1] = 'resolved'
 );
+
+
+ALTER TABLE public.profiles 
+ADD COLUMN account_status TEXT NOT NULL DEFAULT 'pending'
+CHECK (account_status IN ('pending', 'active'));
+
+ALTER TABLE public.profiles
+ADD COLUMN email TEXT;
+
+UPDATE public.profiles
+SET email = auth.users.email
+FROM auth.users
+WHERE public.profiles.id = auth.users.id;
+
+CREATE OR REPLACE FUNCTION public.handle_new_user_activation()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF NEW.email_confirmed_at IS NOT NULL AND OLD.email_confirmed_at IS NULL THEN
+    UPDATE public.profiles SET account_status = 'active' WHERE id = NEW.id;
+  END IF;
+
+  IF NEW.last_sign_in_at IS NOT NULL AND OLD.last_sign_in_at IS NULL THEN
+    UPDATE public.profiles SET account_status = 'active' WHERE id = NEW.id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_activated
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_activation();
