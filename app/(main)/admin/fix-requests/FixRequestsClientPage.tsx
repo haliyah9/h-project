@@ -1,10 +1,9 @@
 "use client";
 
-import DownloadButton from "@/components/DownloadButton";
 import { useEffect, useState } from "react";
 import Tiptap from "@/components/Tiptap";
 import { createClient } from "@/utils/supabase/client";
-import { X } from "lucide-react";
+import { CheckCircle2, Loader2, PenLine, X } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import { asBlob } from "html-docx-js-typescript";
 import {
@@ -13,6 +12,7 @@ import {
   getPdfOptions,
 } from "@/utils/DocumentFormatters";
 import { useRouter } from "next/navigation";
+import { getStatusColor } from "@/utils/helpers";
 
 type Request = {
   id: string;
@@ -30,9 +30,7 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
   const router = useRouter();
 
   const [selected, setSelected] = useState<Request | null>(null);
-  const [documentHtml, setDocumentHtml] = useState<string>(
-    "<p>Start typing the official document here...</p>",
-  );
+  const [documentHtml, setDocumentHtml] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -148,76 +146,91 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
 
   if (requests.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
-        <p className="text-gray-500">No request have been submitted.</p>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <CheckCircle2 className="mx-auto mb-3 h-12 w-12 text-green-500 opacity-50" />
+        <h3 className="text-lg font-medium text-slate-900 dark:text-slate-50">
+          You are all caught up!
+        </h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          No requests require fixing at the moment.
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1>Pending Requests</h1>
-      <div className="overflow-x-auto overflow-y-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-100">
-          <thead className="bg-gray-50/50">
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            Pending Requests
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Action required: Draft and finalize documents from source images.
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+          <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Reference
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Title
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Format
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Status
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Action
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {requests.map((req) => (
               <tr
                 key={req.id}
-                className="cursor-pointer transition-colors hover:bg-gray-50/50"
+                className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
               >
-                <td className="px-6 py-4 font-mono text-sm font-medium text-emerald-700">
+                <td className="whitespace-nowrap px-6 py-4 font-mono text-sm font-medium text-slate-500 dark:text-slate-400">
                   {req.reference}
                 </td>
 
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  {req.title}
-                  <div className="mt-1 text-xs text-gray-400">
+                <td className="px-6 py-4">
+                  <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
+                    {req.title}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {new Date(req.created_at).toLocaleDateString()}
                   </div>
                 </td>
 
-                <td className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">
+                <td className="whitespace-nowrap px-6 py-4 text-sm font-bold uppercase text-slate-500 dark:text-slate-400">
                   {req.requested_format}
                 </td>
 
-                <td className="px-6 py-4">
+                <td className="whitespace-nowrap px-6 py-4">
                   <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      req.status === "Resolved"
-                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                        : req.status === "Cancelled"
-                          ? "bg-red-50 text-red-700 ring-1 ring-red-600/20"
-                          : "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20"
-                    }`}
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
+                      req.status,
+                    )}`}
                   >
                     {req.status}
                   </span>
                 </td>
 
-                <td className="px-6 py-4">
+                <td className="whitespace-nowrap px-6 py-4">
                   <button
                     onClick={() => openModal(req)}
-                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   >
+                    <PenLine className="w-4 h-4" />
                     Start Typing
                   </button>
                 </td>
@@ -228,60 +241,73 @@ const FixRequestsClientPage = ({ requests }: { requests: Request[] }) => {
       </div>
 
       {selected && (
-        <div className="fixed inset-0 z-50 flex p-4 sm:p-6 items-center justify-center bg-gray-900/60 backdrop-blur-sm">
-          <div className="flex h-full w-full max-w-[1600px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm sm:p-6">
+          <div className="flex h-full w-full max-w-[1600px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+            <div className="z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">
                   Draft Document
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   Reference:{" "}
-                  <span className="font-mono">{selected.reference}</span>
+                  <span className="font-mono font-medium">
+                    {selected.reference}
+                  </span>
                 </p>
               </div>
               <button
                 onClick={handleCloseModal}
-                className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                className="cursor-pointer rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden bg-gray-50">
+            <div className="flex flex-1 grid-cols-1 flex-col overflow-hidden lg:grid lg:grid-cols-2">
               <div className="flex flex-col overflow-y-auto border-r border-gray-200 bg-white p-6">
-                <div className="flex-1">
-                  <Tiptap content={documentHtml} onChange={setDocumentHtml} />
+                <div className="flex flex-col overflow-y-auto border-b border-slate-200 bg-white p-6 lg:border-b-0 lg:border-r dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex-1">
+                    <Tiptap content={documentHtml} onChange={setDocumentHtml} />
+                  </div>
                 </div>
 
-                <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
+                <div className="mt-6 flex justify-end border-t border-slate-200 pt-4 dark:border-slate-800">
                   <button
                     type="button"
                     onClick={handleSaveDocument}
                     disabled={isSaving}
-                    className="rounded-xl bg-emerald-600 px-8 py-3 font-semibold text-white transition hover:bg-emerald-700 shadow-sm"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto dark:focus:ring-offset-slate-900"
                   >
-                    {isSaving
-                      ? "Generating Document..."
-                      : `Save and Generate ${selected.requested_format}`}
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Generating Document...
+                      </>
+                    ) : (
+                      `Save and Generate ${selected.requested_format.toUpperCase()}`
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center overflow-auto p-6">
+              <div className="flex flex-col items-center justify-center overflow-auto bg-slate-50 p-6 dark:bg-slate-950/50">
                 {imageLoading ? (
-                  <div className="flex flex-col items-center text-gray-400 animate-pulse">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-emerald-600 mb-4"></div>
-                    <p>Loading attachment preview...</p>
+                  <div className="flex flex-col items-center text-slate-400 dark:text-slate-500">
+                    <Loader2 className="mb-4 h-8 w-8 animate-spin text-blue-600 dark:text-blue-500" />
+                    <p className="text-sm font-medium animate-pulse">
+                      Loading attachment preview...
+                    </p>
                   </div>
                 ) : imageUrl ? (
                   <img
                     src={imageUrl}
                     alt="Original Upload"
-                    className="max-h-full max-w-full rounded-lg object-contain shadow-md border border-gray-200 bg-white"
+                    className="max-h-full max-w-full rounded-lg border border-slate-200 bg-white object-contain shadow-md dark:border-slate-700 dark:bg-slate-900"
                   />
                 ) : (
-                  <p className="text-gray-400">Failed to load preview.</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">
+                    Failed to load preview.
+                  </p>
                 )}
               </div>
             </div>
