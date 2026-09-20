@@ -30,6 +30,7 @@ export const DEPARTMENTS = [
 export const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case "resolved":
+    case "active":
       return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
     case "pending":
       return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
