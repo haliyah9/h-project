@@ -39,6 +39,23 @@ const InvitePage = () => {
         return;
       }
 
+      if (
+        hash.includes("error_description") ||
+        queryParams.has("error_description")
+      ) {
+        setMessage({
+          type: "error",
+          text: "Your invitation link has expired or is invalid.",
+        });
+        setPageStatus("expired");
+        return;
+      }
+
+      if (hash.includes("access_token=")) {
+        setPageStatus("valid");
+        return;
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
